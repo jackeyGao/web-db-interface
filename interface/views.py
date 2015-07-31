@@ -68,8 +68,14 @@ class InterfaceListCreateViewSet(viewsets.ModelViewSet):
         try:
             cursor = connection.cursor()
             result = cursor.execute(sql)
+            if 'primary key' not in sql.lower():
+                table_name = self.parse_sql_table_name(sql)
+                sql = "ALTER TABLE %s ADD id int(11) AUTO_INCREMENT PRIMARY KEY;"\
+                        % table_name
+                result = cursor.execute(sql)
         except Exception as e:
             raise exceptions.APIException("Create table error. E:%s" % str(e))
+        return True
 
     def parse_sql_table_name(self, sql):
         # Get table name in sql and remote '`'
